@@ -5,4 +5,4 @@ const isLocalhost = window.location.hostname === "localhost" || window.location.
 
 const BASE_URL = isLocalhost
   ? "http://localhost:5000"         // Local backend
-  : "https://your-vercel-backend-url.vercel.app";  // 🚀 REPLACE THIS WITH YOUR VERCEL BACKEND URL
+  : "https://smartcart-backend.vercel.app";  // 🚀 REPLACE THIS WITH YOUR VERCEL BACKEND URL
