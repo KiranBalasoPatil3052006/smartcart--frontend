@@ -1,0 +1,613 @@
+/* ====================
+   📌 VARS & BASE
+==================== */
+:root {
+    --primary-color: #000B58;
+    --background-color: #F5F5F5;
+    --header-bg: #000B58;
+    --header-text: #FFFFFF;
+    --sidebar-bg: #F5F5F5;
+    --sidebar-text: #000B58;
+    --sidebar-hover-bg: #EAEAEA;
+    --sidebar-accent: #3366CC;
+    --bottom-nav-height: 70px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    padding-top: 80px;
+    /* Space for fixed header */
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* ====================
+   📌 TOP BAR (HEADER)
+==================== */
+.top-bar {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    height: 60px;
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--header-text);
+    color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* ====================
+   📌 MENU TOGGLE
+==================== */
+.menu-toggle {
+    cursor: pointer;
+    z-index: 1101;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    /* Always visible to toggle sidebar */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: var(--header-text);
+    /* White on header */
+    margin: 4px 0;
+    border-radius: 2px;
+    transition: 0.4s;
+}
+
+.menu-toggle.dark span {
+    background-color: var(--primary-color);
+    /* Dark for inside sidebar */
+}
+
+/* Animate hamburger */
+.menu-toggle.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* ====================
+   📌 SIDEBAR
+==================== */
+nav {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    /* Hidden by default */
+    width: 280px;
+    height: 100%;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+}
+
+nav.active {
+    left: 0;
+}
+
+.sidebar-top {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.sidebar-header h3 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 20px 0;
+}
+
+nav ul li {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--sidebar-text);
+    border-left: 5px solid transparent;
+    transition: all 0.2s ease;
+}
+
+nav ul li:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-accent);
+    border-left: 5px solid var(--sidebar-accent);
+}
+
+/* Icons for sidebar */
+.sidebar-icon {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: transform 0.2s;
+}
+
+nav ul li:hover .sidebar-icon {
+    transform: scale(1.1);
+}
+
+/* ====================
+   📌 OVERLAY
+==================== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1000;
+    /* Behind sidebar (1001) but above content */
+    backdrop-filter: blur(2px);
+}
+
+.overlay.show {
+    display: block;
+}
+
+/* ====================
+   📌 MAIN CONTENT
+==================== */
+.main-content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    transition: filter 0.3s ease-in-out;
+}
+
+.main-content.blur {
+    filter: blur(5px);
+}
+
+.admin-heading {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+}
+
+.container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* ====================
+   📌 BUTTONS & INPUTS
+==================== */
+.btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 20px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin: 5px;
+}
+
+.btn:hover {
+    background-color: transparent;
+    color: var(--primary-color);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"] {
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+    width: 100%;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto 20px auto;
+}
+
+/* ====================
+   📌 TABLES
+==================== */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin-bottom: 20px;
+}
+
+th,
+td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* ====================
+   📌 FORMS & MODALS
+==================== */
+#add-product-form,
+#edit-product-form {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 0 auto 30px auto;
+    border: 1px solid #eee;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* ====================
+   📌 RESPONSIVE
+==================== */
+
+/* Tablet */
+@media (max-width: 992px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .admin-heading {
+        font-size: 1.5rem;
+    }
+
+    #add-product-form,
+    #edit-product-form {
+        max-width: 100%;
+        padding: 20px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px;
+    }
+
+    .top-bar {
+        top: 5px;
+        left: 5px;
+        width: calc(100% - 10px);
+        height: 55px;
+        border-radius: 20px;
+        padding: 0 15px;
+    }
+
+    .brand-name {
+        font-size: 1.1rem;
+    }
+
+    .profile-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .main-content {
+        padding: 10px;
+    }
+
+    .admin-heading {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    /* Button Groups */
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        margin: 5px 0;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+
+    /* Search Container */
+    .search-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-container input {
+        width: 100%;
+    }
+
+    .search-container .btn {
+        width: 100%;
+    }
+
+    /* Forms */
+    #add-product-form,
+    #edit-product-form {
+        padding: 15px;
+        margin: 0 0 20px 0;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 12px;
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+    }
+
+    /* Card View for Tables on Mobile */
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background: #fff;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    td {
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding: 12px 10px;
+        padding-left: 45%;
+        text-align: right;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 45px;
+    }
+
+    td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--primary-color);
+        text-align: left;
+        position: absolute;
+        left: 10px;
+        width: 40%;
+    }
+
+    td:last-child {
+        border-bottom: none;
+        justify-content: center;
+        padding-left: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    td:last-child .btn {
+        flex: 1;
+        min-width: 80px;
+        margin: 0;
+    }
+
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        margin: 15% auto;
+        padding: 20px;
+    }
+
+    .close {
+        top: 10px;
+        right: 15px;
+    }
+
+    /* Sidebar adjustments */
+    nav {
+        width: 260px;
+        left: -260px;
+    }
+
+    nav ul li {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+
+    /* Barcode Generator */
+    #barcode-generator-section>div {
+        padding: 20px !important;
+        margin: 15px auto !important;
+    }
+
+    #barcode-actions {
+        flex-direction: column;
+    }
+
+    #barcode-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .brand-name {
+        font-size: 0.95rem;
+    }
+
+    .admin-heading {
+        font-size: 1.1rem;
+    }
+
+    td {
+        padding-left: 50%;
+    }
+
+    td::before {
+        width: 45%;
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+}

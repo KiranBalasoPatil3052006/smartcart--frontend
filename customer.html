@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Cart</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+
+
+    <style>
+        /* ===== Base Styles ===== */
+        :root {
+            --primary-color: #000B58;
+            --background-color: #F5F5F5;
+            --header-bg: #000B58;
+            --header-text: #FFFFFF;
+            --sidebar-bg: #F5F5F5;
+            --sidebar-text: #000B58;
+            --sidebar-hover-bg: #EAEAEA;
+            --sidebar-accent: #3366CC;
+            --bottom-nav-height: 70px;
+            --scan-button-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            padding-top: 80px;
+            padding-bottom: calc(var(--bottom-nav-height) + var(--scan-button-height) + 20px);
+            overflow-x: hidden;
+        }
+
+        /* ===== Top Bar (Header) ===== */
+        .top-bar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            height: 60px;
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            border-radius: 30px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--header-text);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* ===== Hamburger Menu (for Desktop) ===== */
+        .menu-toggle {
+            cursor: pointer;
+            z-index: 1001;
+            width: 30px;
+            height: 30px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background-color: var(--header-text);
+            margin: 4px 0;
+            border-radius: 2px;
+            transition: 0.4s;
+            transform-origin: center;
+        }
+
+        .menu-toggle.open span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .menu-toggle.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* ===== Sidebar ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+        }
+
+        nav.active {
+            left: 0;
+        }
+
+        .sidebar-top {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        #sidebar-close-btn {
+            display: none;
+        }
+
+        #sidebar-close-btn span {
+            background-color: var(--sidebar-text);
+        }
+
+        #sidebar-close-btn span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        #sidebar-close-btn span:nth-child(2) {
+            opacity: 0;
+        }
+
+        #sidebar-close-btn span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            border-bottom: 1px solid #0000001a;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 15px 0;
+        }
+
+        nav ul li {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--sidebar-text);
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-icon {
+            width: 22px;
+            height: 22px;
+            stroke: var(--sidebar-text);
+            stroke-width: 2;
+            fill: none;
+            transition: all 0.2s ease;
+        }
+
+        nav ul li:hover {
+            background-color: var(--sidebar-hover-bg);
+            color: var(--sidebar-accent);
+            border-left: 4px solid var(--sidebar-accent);
+        }
+
+        nav ul li:hover .sidebar-icon {
+            stroke: var(--sidebar-accent);
+            transform: scale(1.1);
+        }
+
+        nav ul li.active {
+            background-color: var(--sidebar-hover-bg);
+            color: var(--sidebar-accent);
+            font-weight: bold;
+            border-left: 4px solid var(--sidebar-accent);
+        }
+
+        nav ul li.active .sidebar-icon {
+            stroke: var(--sidebar-accent);
+        }
+
+        /* ===== Main Content ===== */
+        .main-content {
+            padding: 20px;
+            transition: filter 0.3s ease-in-out;
+        }
+
+        .main-content.blur {
+            filter: blur(5px);
+        }
+
+        #initial-message {
+            text-align: center;
+            margin-top: 30vh;
+            transform: translateY(-50%);
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* ===== Customer Info Modal ===== */
+        .customer-info-modal {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            width: 90%;
+            max-width: 400px;
+            background: var(--sidebar-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1002;
+            border: 2px solid var(--primary-color);
+            opacity: 0;
+            transform: translate(-50%, -20px) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            visibility: hidden;
+        }
+
+        .customer-info-modal.show {
+            opacity: 1;
+            transform: translate(-50%, 0) scale(1);
+            visibility: visible;
+        }
+
+        .customer-info-modal .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+        }
+
+        #customer-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color);
+        }
+
+        #customer-info-table td {
+            padding: 8px 0;
+            border: none;
+            font-size: 1.1rem;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1001;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* ===== Scanner & Product List ===== */
+        #scanner-container {
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            overflow: hidden;
+            margin: 0 auto;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        /* Force html5-qrcode inner elements to fill and center */
+        #scanner-container>div {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #video {
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+        }
+
+        .list-content {
+            margin-top: 20px;
+        }
+
+        .list-head {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #product-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px auto;
+        }
+
+        #product-table th,
+        #product-table td {
+            border: 3px solid var(--primary-color);
+            padding: 8px;
+            text-align: center;
+        }
+
+        #product-table th {
+            background-color: #EAEAEA;
+            white-space: nowrap;
+        }
+
+        .payment-buttons {
+            display: flex;
+            justify-content: space-evenly;
+            margin-top: 10px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .scan-buttons-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #scan-btn,
+        #stop-scan-btn {
+            padding: 18px 35px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        #scan-btn {
+            background-color: #3366CC;
+            color: white;
+            display: block;
+        }
+
+        #stop-scan-btn {
+            background-color: #D32F2F;
+            color: white;
+            display: none;
+        }
+
+        #scan-btn:hover {
+            background-color: #2851A3;
+            transform: translateY(-2px);
+        }
+
+        #stop-scan-btn:hover {
+            background-color: #AA2525;
+            transform: translateY(-2px);
+        }
+
+        #cash-btn,
+        #online-btn {
+            background-color: var(--primary-color);
+            color: var(--header-text);
+            border: 2px solid var(--primary-color);
+            font-weight: 600;
+            border-radius: 9px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+
+        #cash-btn:hover,
+        #online-btn:hover {
+            background-color: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        /* ===== Bottom Nav ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--bottom-nav-height);
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            display: flex;
+            justify-content: space-around;
+            z-index: 999;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            height: 100%;
+            transition: color 0.2s ease;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            stroke: var(--header-text);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: stroke 0.2s ease-in-out;
+        }
+
+        .nav-item.active {
+            color: var(--sidebar-accent);
+        }
+
+        .nav-item.active .nav-icon {
+            stroke: var(--sidebar-accent);
+        }
+
+        /* ===== Mobile Specific Styles ===== */
+        @media (max-width: 768px) {
+            .scan-buttons-wrapper {
+                position: fixed;
+                bottom: var(--bottom-nav-height);
+                left: 0;
+                width: 100%;
+                padding: 10px 20px;
+                background-color: var(--background-color);
+                z-index: 998;
+            }
+
+            #scanner-container {
+                position: -webkit-sticky;
+                /* For Safari */
+                position: sticky;
+                top: 70px;
+                /* Below floating header */
+                z-index: 990;
+                background: var(--background-color);
+                padding: 0;
+                max-height: 150px;
+                /* Hard cap on overall scanner box height */
+                overflow: hidden;
+            }
+
+            #video {
+                max-height: 150px;
+                /* Minimal height for barcode focus */
+                width: 100%;
+                object-fit: cover;
+                border-bottom: 2px solid var(--primary-color);
+            }
+
+            /* Restored Table View (Scrollable) */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-top: 10px;
+                border: 1px solid var(--primary-color);
+                border-radius: 8px;
+            }
+
+            #product-table {
+                width: 100%;
+                min-width: 350px;
+                /* Force minimum width to trigger scroll if needed */
+                font-size: 0.85rem;
+            }
+
+            #product-table th,
+            #product-table td {
+                padding: 8px 4px;
+                white-space: nowrap;
+                /* Prevent wrapping to keep table structure */
+            }
+
+            /* Hide data-label content since we are using real headers */
+            #product-table td::before {
+                display: none;
+            }
+
+            #product-table tr {
+                display: table-row;
+                border: none;
+                box-shadow: none;
+                margin-bottom: 0;
+                background: transparent;
+            }
+
+            #product-table td {
+                display: table-cell;
+                border: 1px solid var(--primary-color);
+                text-align: center;
+                padding-left: 4px;
+                /* Reset padding */
+            }
+
+            #product-table thead {
+                display: table-header-group;
+            }
+
+            #product-table td:last-child {
+                border-bottom: 1px solid var(--primary-color);
+                justify-content: center;
+                padding-top: 8px;
+            }
+
+            .qty-wrapper {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            /* Reduce gap between content and fixed bottom buttons */
+            .list-content {
+                margin-top: 70px;
+            }
+
+            /* Ensure content doesn't hide behind the fixed scan button bar */
+            body {
+                padding-bottom: calc(var(--bottom-nav-height) + 60px);
+            }
+        }
+
+        /* ===== Desktop Specific Styles ===== */
+        @media (min-width: 769px) {
+            body {
+                padding-bottom: 20px;
+            }
+
+            .menu-toggle,
+            nav,
+            #sidebar-close-btn {
+                display: flex;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .scan-buttons-wrapper {
+                margin-top: 20px;
+            }
+
+            #scanner-container {
+                max-width: 450px;
+                margin: 2px auto;
+                margin-top: -20px;
+            }
+        }
+
+        .qty-btn {
+            margin: 2px;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .qty-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .qty-value {
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .drawingBuffer {
+            display: none;
+        }
+
+        /* ===== Purchase Complete Popup ===== */
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOverlay 0.3s ease;
+        }
+
+        @keyframes fadeInOverlay {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .popup-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 36px 28px 28px;
+            text-align: center;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+            animation: slideUp 0.35s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(60px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .popup-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .popup-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0 0 8px;
+            font-weight: 700;
+        }
+
+        .popup-msg {
+            color: #555;
+            font-size: 0.95rem;
+            margin-bottom: 18px;
+        }
+
+        .popup-timer-bar {
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .popup-timer-fill {
+            height: 100%;
+            width: 100%;
+            background: var(--primary-color);
+            border-radius: 99px;
+            transition: width linear;
+        }
+
+        .popup-countdown {
+            font-size: 0.8rem;
+            color: #999;
+            margin: 0 0 20px;
+        }
+
+        .popup-back-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .popup-back-btn:hover {
+            filter: brightness(1.12);
+        }
+
+        #verify-section {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            margin: 30px auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #verify-section label {
+            display: block;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        #verify-section input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        #verify-section button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            margin: 0 10px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #verify-section button:hover {
+            background-color: var(--sidebar-accent);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <span class="brand-name">Smart Cart</span>
+        </div>
+        <div class="profile-icon" id="profileBtn">P</div>
+    </header>
+
+    <nav id="sideMenu">
+        <div class="sidebar-top">
+            <div class="menu-toggle" id="sidebar-close-btn">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="sidebar-header">
+            <h3>Smart Cart</h3>
+        </div>
+        <ul>
+            <li class="active">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Home</span>
+            </li>
+            <li>
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>About Us</span>
+            </li>
+            <li>
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+                <span>Contact</span>
+            </li>
+            <li onclick="showInbox()">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <span>Inbox (Bills)</span>
+            </li>
+            <li onclick="MovetoExit()">
+                <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Logout</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="pageOverlay" class="overlay"></div>
+
+    <div id="customer-info" class="customer-info-modal">
+        <button class="close-btn" id="closeProfileBtn">&times;</button>
+        <table id="customer-info-table">
+            <tr>
+                <td><strong>Name:</strong></td>
+                <td><span id="cust-name"></span></td>
+            </tr>
+            <tr>
+                <td><strong>Mobile:</strong></td>
+                <td><span id="cust-mobile"></span></td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong></td>
+                <td><span id="cust-email"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <main class="main-content" id="mainContent">
+        <div id="initial-message">
+            <p>Scan the barcode for purchase.</p>
+        </div>
+        <div id="scanner-container" style="display: none;">
+            <video id="video" autoplay></video>
+        </div>
+        <div class="list-content" style="display: none;">
+            <h3 class="list-head">Product List</h3>
+            <div class="table-container">
+                <table id="product-table">
+                    <thead>
+                        <tr>
+                            <th>Sno</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list"></tbody>
+                </table>
+            </div>
+            <h3 class="list-head">Total: ₹<span id="total-amount">0.00</span></h3>
+            <div class="payment-buttons" id="payment-buttons" style="display: none;">
+                <button onclick="handleCashPay()" id="cash-btn">Cash Pay</button>
+                <button onclick="handleOnlinePay()" id="online-btn">Online Pay</button>
+            </div>
+            <div id="messageBox"></div>
+        </div>
+
+        <div class="scan-buttons-wrapper">
+            <button id="scan-btn">Start Scanning</button>
+            <button id="stop-scan-btn">Stop Scanning</button>
+        </div>
+
+        <!-- ===== Purchase Complete Popup ===== -->
+        <div id="purchase-complete-popup" class="popup-overlay" style="display:none;">
+            <div class="popup-box">
+                <div class="popup-icon">✅</div>
+                <h2 class="popup-title">Purchase Complete!</h2>
+                <p class="popup-msg">Thank you for shopping. Your receipt has been downloaded.</p>
+                <div class="popup-timer-bar">
+                    <div class="popup-timer-fill" id="popup-timer-fill"></div>
+                </div>
+                <p class="popup-countdown" id="popup-countdown">Closing in 5s…</p>
+                <button class="popup-back-btn" onclick="closePurchasePopup()">← Back to Home</button>
+            </div>
+        </div>
+
+        <div id="verify-section" style="display: none; margin-top: 20px;">
+            <label for="cashier-code">Enter Cashier Code:</label>
+            <input type="text" id="verify-cashier-code" placeholder="Cashier Code" required />
+            <button onclick="verifyCashierCodeAndDownload()">Verify</button>
+            <button onclick="backToProductList()">Back</button>
+            <button onclick="backToProductList()">Back</button>
+        </div>
+
+        <!-- ========================= INBOX SECTION ========================= -->
+        <div id="inbox-section" style="display:none; margin-top:20px;">
+            <h2 style="text-align:center; color: var(--primary-color); margin-bottom: 20px;">My Bills</h2>
+            <div class="table-container">
+                <table id="inbox-table" style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#EAEAEA; color:var(--primary-color);">
+                            <th style="padding:10px; border:1px solid #ddd;">Date</th>
+                            <th style="padding:10px; border:1px solid #ddd;">Amount</th>
+                            <th style="padding:10px; border:1px solid #ddd;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inbox-list"></tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="hideInbox()"
+                style="margin-top:20px; background:#555; color:white; padding:10px 20px; border:none; border-radius:5px;">Back
+                to Home</button>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item">
+                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Home
+            </div>
+            <div class="nav-item" id="bottomNavAbout">
+                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                About
+            </div>
+            <div class="nav-item">
+                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                    </path>
+                </svg>
+                Contact
+            </div>
+            <div class="nav-item" onclick="showInbox()">
+                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Inbox
+            </div>
+            <div class="nav-item" onclick="MovetoExit()">
+                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+            </div>
+        </div>
+
+        <script src="config.js"></script>
+        <script>
+            const profileBtn = document.getElementById('profileBtn');
+            const bottomNavAboutBtn = document.getElementById('bottomNavAbout'); // Corrected ID
+            const closeProfileBtn = document.getElementById('closeProfileBtn');
+            const customerInfoModal = document.getElementById('customer-info');
+            const pageOverlay = document.getElementById('pageOverlay');
+            const mainContent = document.getElementById('mainContent');
+            const initialMessage = document.getElementById('initial-message');
+            const listContent = document.querySelector('.list-content');
+            const scanBtn = document.getElementById('scan-btn');
+            const stopScanBtn = document.getElementById('stop-scan-btn');
+            const scannerContainer = document.getElementById('scanner-container');
+            const productList = document.getElementById('product-list');
+            const messageBox = document.getElementById("messageBox");
+            const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            // Event Listeners
+            profileBtn.addEventListener('click', toggleProfileModal);
+            // NOTE: The 'About' button is now separate and does not open the profile modal.
+            // You can add a new function for it here if needed, e.g., bottomNavAboutBtn.addEventListener('click', showAboutPage);
+            closeProfileBtn.addEventListener('click', toggleProfileModal);
+            pageOverlay.addEventListener('click', toggleProfileModal);
+
+            scanBtn.addEventListener('click', () => {
+                scannerContainer.style.display = 'block';
+                scanBtn.style.display = 'none';
+                stopScanBtn.style.display = 'block';
+                initialMessage.style.display = 'none';
+                listContent.style.display = 'block';
+                startScanner();
+            });
+
+            stopScanBtn.addEventListener('click', () => {
+                stopScanner();
+                scannerContainer.style.display = 'none';
+                scanBtn.style.display = 'block';
+                stopScanBtn.style.display = 'none';
+                if (Object.keys(scannedProducts).length === 0) {
+                    listContent.style.display = 'none';
+                    initialMessage.style.display = 'block';
+                }
+            });
+
+            sidebarCloseBtn.addEventListener('click', toggleMenu);
+
+            navItems.forEach((item, index) => {
+                if (index === 0) item.classList.add('active');
+                item.addEventListener('click', () => {
+                    navItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+
+            // Functions
+            function toggleMenu() {
+                document.getElementById("sideMenu").classList.toggle("active");
+                document.querySelector(".menu-toggle").classList.toggle("open");
+            }
+
+            function toggleProfileModal() {
+                customerInfoModal.classList.toggle('show');
+                pageOverlay.classList.toggle('show');
+                mainContent.classList.toggle('blur');
+            }
+
+            const customerName = localStorage.getItem("customerName"),
+                customerNumber = localStorage.getItem("customerNumber"),
+                customerEmail = localStorage.getItem("customerEmail");
+
+            document.getElementById("cust-name").textContent = customerName || "Unknown";
+            document.getElementById("cust-mobile").textContent = customerNumber || "Unknown";
+            document.getElementById("cust-email").textContent = customerEmail || "Unknown";
+
+            function showMessage(message, type) {
+                messageBox.textContent = message;
+                messageBox.className = "";
+                if (type === "success") messageBox.classList.add("success");
+                else messageBox.classList.add("error");
+            }
+
+            function MovetoExit() {
+                window.location.href = "CustomerLogin.html";
+            }
+
+            // Product Scanning
+            const scannedProducts = {};
+            let lastScannedCode = null,
+                scanCooldown = false;
+
+            let html5QrCode;
+
+            function startScanner() {
+                if (html5QrCode) {
+                    // Already running
+                    return;
+                }
+
+                html5QrCode = new Html5Qrcode("scanner-container");
+
+                // Config for speed and formats
+                const qrboxFunction = function (viewfinderWidth, viewfinderHeight) {
+                    // Fixed small rectangle, ideal for slim barcodes
+                    return { width: 280, height: 160 };
+                };
+
+                const config = {
+                    fps: 20, // Higher FPS for faster scanning
+                    qrbox: qrboxFunction,
+                    aspectRatio: 2.0, // Matches our 400x200 container (2:1 wide)
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.UPC_A,
+                        Html5QrcodeSupportedFormats.UPC_E,
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.CODE_128
+                    ]
+                };
+
+                // Prefer back camera
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    onDetectedHandler,
+                    (errorMessage) => {
+                        // parse error, ignore it to avoid console spam
+                    }
+                ).catch(err => {
+                    console.error("Error starting scanner", err);
+                    showMessage("Failed to start scanner. Please check camera permissions.", "error");
+                    // Revert UI
+                    document.getElementById('scanner-container').style.display = 'none';
+                    document.getElementById('scan-btn').style.display = 'block';
+                    document.getElementById('stop-scan-btn').style.display = 'none';
+                });
+            }
+
+            function stopScanner() {
+                if (html5QrCode) {
+                    html5QrCode.stop().then(() => {
+                        html5QrCode.clear();
+                        html5QrCode = null;
+                        console.log("Scanner stopped.");
+                    }).catch(err => {
+                        console.error("Failed to stop scanner", err);
+                    });
+                }
+            }
+
+            function onDetectedHandler(decodedText, decodedResult) {
+                const code = decodedText;
+                // console.log(`Scan result: ${code}`, decodedResult);
+
+                if (scanCooldown || code === lastScannedCode) return;
+
+                scanCooldown = true;
+                lastScannedCode = code;
+
+                // Visual feedback (optional vibration)
+                if (navigator.vibrate) navigator.vibrate(200);
+
+                fetchProduct(code);
+
+                // 2s cooldown to prevent double-scanning same item immediately
+                setTimeout(() => {
+                    scanCooldown = false;
+                    lastScannedCode = null;
+                }, 1500);
+            }
+
+            function fetchProduct(barcode) {
+                fetch(`${BASE_URL}/product/${barcode}`)
+                    .then(res => res.json())
+                    .then(product => {
+                        if (!product || !product.name) return;
+                        if (scannedProducts[barcode])
+                            scannedProducts[barcode].quantity += 1;
+                        else
+                            scannedProducts[barcode] = { ...product, quantity: 1, barcode };
+                        renderProductList();
+                    })
+                    .catch(err => console.error("Error fetching product:", err));
+            }
+
+            function renderProductList() {
+                initialMessage.style.display = "none";
+                listContent.style.display = "block";
+                productList.innerHTML = "";
+                let grandTotal = 0;
+
+                Object.values(scannedProducts).forEach((p, index) => {
+                    const total = p.price * p.quantity;
+                    grandTotal += total;
+                    const row = `
+            <tr>
+                <td data-label="Sno">${index + 1}</td>
+                <td data-label="Name">${p.name}</td>
+                <td data-label="Price">₹${p.price.toFixed(2)}</td>
+                <td data-label="Qty">
+                    <div class="qty-wrapper">
+                        <button class="qty-btn" onclick="updateQty('${p.barcode}', -1)">-</button>
+                        <span class="qty-value">${p.quantity}</span>
+                        <button class="qty-btn" onclick="updateQty('${p.barcode}', 1)">+</button>
+                    </div>
+                </td>
+                <td data-label="Total">₹${total.toFixed(2)}</td>
+                <td data-label="Action">
+                    <button onclick="removeProduct('${p.barcode}')">Delete</button>
+                </td>
+            </tr>`;
+                    productList.innerHTML += row;
+                });
+
+                document.getElementById("total-amount").textContent = grandTotal.toFixed(2);
+                document.getElementById("payment-buttons").style.display =
+                    Object.keys(scannedProducts).length > 0 ? "flex" : "none";
+            }
+
+            function updateQty(barcode, change) {
+                if (scannedProducts[barcode]) {
+                    scannedProducts[barcode].quantity += change;
+                    if (scannedProducts[barcode].quantity <= 0)
+                        delete scannedProducts[barcode];
+                    renderProductList();
+                }
+            }
+
+            function removeProduct(barcode) {
+                delete scannedProducts[barcode];
+                renderProductList();
+            }
+
+            // Save Purchase
+            async function savePurchase(paymentMethod, cashierCode = "") {
+                const products = Object.values(scannedProducts).map(p => ({
+                    barcode: p.barcode,
+                    name: p.name,
+                    price: p.price,
+                    quantity: p.quantity
+                }));
+
+                const payload = {
+                    name: customerName,
+                    mobile: customerNumber,
+                    email: customerEmail,
+                    products,
+                    paymentMethod,
+                    cashierCode
+                };
+
+                await fetch(`${BASE_URL}/purchase`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            // Cash Payment Flow
+            async function handleCashPay() {
+                // Ensure scanner is stopped using the UI button logic
+                stopScanBtn.click();
+
+                const payload = { name: customerName, mobile: customerNumber };
+                const response = await fetch(`${BASE_URL}/cash-intent`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    localStorage.setItem("expectedCashierCode", result.cashierCode);
+                    document.querySelector(".list-content").style.display = "none";
+                    document.getElementById("verify-section").style.display = "block";
+                    scannerContainer.style.display = "none";
+                    showMessage("Cash payment initiated. Please verify cashier code.", "success");
+                } else {
+                    showMessage("❌ Failed to initiate cash payment.", "error");
+                }
+            }
+
+            function backToProductList() {
+                document.querySelector(".list-content").style.display = "block";
+                // Do not auto-show scanner container, let user choose to start scanning
+                // scannerContainer.style.display = "block"; 
+                document.getElementById("verify-section").style.display = "none";
+            }
+
+            // ===== Purchase Complete Popup =====
+            let _popupTimer = null;
+
+            function showPurchaseCompletePopup() {
+                const popup = document.getElementById('purchase-complete-popup');
+                const fill = document.getElementById('popup-timer-fill');
+                const countdown = document.getElementById('popup-countdown');
+                popup.style.display = 'flex';
+
+                // Animate the shrinking bar over 5s
+                fill.style.transition = 'none';
+                fill.style.width = '100%';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        fill.style.transition = 'width 5s linear';
+                        fill.style.width = '0%';
+                    });
+                });
+
+                let secs = 5;
+                countdown.textContent = `Closing in ${secs}s\u2026`;
+                _popupTimer = setInterval(() => {
+                    secs--;
+                    if (secs <= 0) {
+                        clearInterval(_popupTimer);
+                        closePurchasePopup();
+                    } else {
+                        countdown.textContent = `Closing in ${secs}s\u2026`;
+                    }
+                }, 1000);
+            }
+
+            function closePurchasePopup() {
+                clearInterval(_popupTimer);
+                document.getElementById('purchase-complete-popup').style.display = 'none';
+                window.location.reload();
+            }
+
+            async function verifyCashierCodeAndDownload() {
+                const enteredCode = document.getElementById("verify-cashier-code").value;
+
+                const response = await fetch(`${BASE_URL}/verify-cashier-code`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ mobile: customerNumber, cashierCode: enteredCode })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await savePurchase("cash", enteredCode);
+                    await generatePDFReceipt();
+                    showPurchaseCompletePopup();
+                } else {
+                    showMessage("❌ " + result.message, "error");
+                }
+            }
+
+            // Online Payment
+            async function handleOnlinePay() {
+                // Ensure scanner is stopped
+                stopScanBtn.click();
+
+                const total = document.getElementById("total-amount").textContent;
+                window.location.href = `upi://pay?pa=merchant@upi&pn=SmartCart&am=${total}&cu=INR`;
+
+                setTimeout(async () => {
+                    await savePurchase("online");
+                    await generatePDFReceipt();
+                    showPurchaseCompletePopup();
+                }, 3000);
+            }
+
+            // PDF Receipt Generation
+            // Helper: Generate Blue Logo Base64 client-side to match Login page
+            function getBlueLogoBase64() {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = "images/cartimage.png";
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext("2d");
+
+                        // Apply the exact CSS filter from CustomerLogin.html
+                        ctx.filter = "grayscale(100%) brightness(0.3) sepia(100%) hue-rotate(200deg) saturate(500%)";
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        resolve(canvas.toDataURL("image/png"));
+                    };
+                    img.onerror = () => resolve(null); // Fail gracefully
+                });
+            }
+
+            // PDF Receipt Generation
+            async function generatePDFReceipt() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const centerX = pageWidth / 2;
+
+                // ===== ADD LOGO =====
+                try {
+                    const logoBase64 = await getBlueLogoBase64();
+                    if (logoBase64) {
+                        doc.addImage(logoBase64, "PNG", centerX - 20, 10, 40, 40); // Square logo
+                    }
+                } catch (e) {
+                    console.warn("Logo add failed", e);
+                }
+
+                // ===== TITLE =====
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(20);
+                doc.text("SMART CART", centerX, 55, { align: "center" });
+
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text("Automated Shopping Receipt", centerX, 63, { align: "center" });
+
+                // ===== LINE =====
+                doc.line(10, 70, 200, 70);
+
+                // ===== BILL DETAILS =====
+                const date = new Date().toLocaleString();
+                const invoiceNo = "INV-" + Math.floor(Math.random() * 100000);
+
+                doc.text(`Invoice No: ${invoiceNo}`, 10, 80);
+                doc.text(`Date: ${date}`, 120, 80);
+
+                doc.line(10, 85, 200, 85);
+
+                // ===== TABLE HEADER =====
+                let y = 95;
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Barcode", 10, y);
+                doc.text("Product", 45, y);
+                doc.text("Price", 110, y);
+                doc.text("Qty", 140, y);
+                doc.text("Total", 165, y);
+
+                doc.line(10, y + 3, 200, y + 3);
+                y += 10;
+
+                // ===== PRODUCTS =====
+                doc.setFont("helvetica", "normal");
+
+                let grandTotal = 0;
+
+                for (const [barcode, product] of Object.entries(scannedProducts)) {
+                    const total = product.price * product.quantity;
+
+                    doc.text(barcode.toString(), 10, y);
+                    doc.text(product.name, 45, y);
+                    doc.text(`₹${product.price.toFixed(2)}`, 110, y);
+                    doc.text(product.quantity.toString(), 145, y);
+                    doc.text(`₹${total.toFixed(2)}`, 165, y);
+
+                    y += 8;
+                    grandTotal += total;
+                }
+
+                // ===== TOTAL SECTION =====
+                doc.line(10, y + 5, 200, y + 5);
+                y += 15;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text(`Grand Total: ₹${grandTotal.toFixed(2)}`, 130, y);
+
+                // ===== FOOTER =====
+                y += 20;
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text("Thank you for shopping with Smart Cart!", centerX, y, { align: "center" });
+                doc.text("Visit Again!", centerX, y + 6, { align: "center" });
+
+                doc.save("SmartCart_Receipt.pdf");
+            }
+
+            // ========== INBOX / BILLS ==========
+            function showInbox() {
+                // Hide other views
+                document.getElementById('scanner-container').style.display = 'none';
+                document.querySelector('.list-content').style.display = 'none';
+                document.getElementById('initial-message').style.display = 'none';
+                document.querySelector('.scan-buttons-wrapper').style.display = 'none';
+                document.getElementById('verify-section').style.display = 'none';
+
+                // Show inbox
+                const inboxSection = document.getElementById('inbox-section');
+                inboxSection.style.display = 'block';
+
+                const mobile = localStorage.getItem("customerNumber");
+                if (!mobile) {
+                    alert("Mobile number not found. Please relogin.");
+                    return;
+                }
+
+                fetch(`${BASE_URL}/purchases/customer/${mobile}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const tbody = document.getElementById("inbox-list");
+                        tbody.innerHTML = "";
+                        if (data.length === 0) {
+                            tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:15px;'>No orders yet</td></tr>";
+                            return;
+                        }
+
+                        customerPurchases = data; // Store globally
+                        data.forEach((p, index) => {
+                            let total = 0;
+                            if (p.products) total = p.products.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                            <td style="padding:10px; border:1px solid #ddd; text-align:center;">${new Date(p.date).toLocaleDateString()}</td>
+                            <td style="padding:10px; border:1px solid #ddd; text-align:center;">₹${total.toFixed(2)}</td>
+                            <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+                                <button onclick="downloadBill(${index})" style="background:var(--primary-color); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Download PDF</button>
+                            </td>
+                        `;
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch(err => console.error(err));
+            }
+
+            let customerPurchases = [];
+
+            function hideInbox() {
+                document.getElementById('inbox-section').style.display = 'none';
+                document.getElementById('initial-message').style.display = 'block';
+                document.querySelector('.scan-buttons-wrapper').style.display = 'flex';
+                // Close sidebar if open (mobile)
+                const sideMenu = document.getElementById('sideMenu');
+                const pageOverlay = document.getElementById('pageOverlay');
+                sideMenu.style.left = '-250px';
+                pageOverlay.style.display = 'none';
+            }
+
+            function downloadBill(index) {
+                const purchase = customerPurchases[index];
+                if (!purchase) return;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Header
+                doc.setFontSize(22);
+                doc.setTextColor(0, 11, 88); // Primary Color
+                doc.text("Smart Cart Bill", 105, 20, null, null, "center");
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Date: ${new Date(purchase.date).toLocaleString()}`, 20, 35);
+                doc.text(`Customer: ${purchase.name}`, 20, 42);
+                doc.text(`Mobile: ${purchase.mobile}`, 20, 49);
+                doc.text(`Payment: ${purchase.paymentMethod.toUpperCase()}`, 20, 56);
+
+                // Table Header
+                let y = 70;
+                doc.setFontSize(14);
+                doc.setFillColor(230, 230, 230);
+                doc.rect(15, y - 5, 180, 10, 'F');
+                doc.text("Product", 20, y);
+                doc.text("Price", 100, y);
+                doc.text("Qty", 130, y);
+                doc.text("Total", 160, y);
+
+                y += 10;
+                doc.setFontSize(12);
+
+                let grandTotal = 0;
+                purchase.products.forEach(p => {
+                    const total = p.price * p.quantity;
+                    grandTotal += total;
+                    doc.text(p.name, 20, y);
+                    doc.text(p.price.toString(), 100, y);
+                    doc.text(p.quantity.toString(), 130, y);
+                    doc.text(total.toFixed(2), 160, y);
+                    y += 8;
+                });
+
+                // Grand Total
+                y += 10;
+                doc.setLineWidth(0.5);
+                doc.line(15, y - 5, 195, y - 5);
+                doc.setFontSize(16);
+                doc.setTextColor(0, 11, 88);
+                doc.text(`Grand Total: Rs. ${grandTotal.toFixed(2)}`, 195, y, null, null, "right");
+
+                // Footer
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Thank you for shopping with Smart Cart!", 105, 280, null, null, "center");
+
+                doc.save(`SmartCart_Bill_${purchase.date.split('T')[0]}.pdf`);
+            }
+        </script>
+</body>
+
+</html>

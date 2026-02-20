@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Cart Login</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <style>
+    :root {
+      --primary-color: #000B58;
+      --accent-color: #3366CC;
+      --bg-color: #F5F5F5;
+      --text-color: #333;
+      --card-bg: #FFFFFF;
+      --border-color: #ddd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .smart-cart-logo {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 20px;
+      object-fit: contain;
+      /* Filter to approximate #000B58 (Deep Blue) from typical colored images */
+      filter: grayscale(100%) brightness(0.3) sepia(1) hue-rotate(200deg) saturate(500%);
+    }
+
+    .login-container {
+      background-color: var(--card-bg);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .form-heading {
+      text-align: center;
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 26px;
+      margin-bottom: 30px;
+    }
+
+    label {
+      color: var(--primary-color);
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"] {
+      width: 100%;
+      height: 45px;
+      padding: 10px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 11, 88, 0.1);
+    }
+
+    .user-login {
+      width: 100%;
+      height: 48px;
+      margin-top: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+    }
+
+    .user-login:hover {
+      background-color: #001f99;
+    }
+
+    .user-login:active {
+      transform: scale(0.98);
+    }
+
+    .google-btn {
+      width: 100%;
+      height: 48px;
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: #fff;
+      color: #555;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .google-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #ccc;
+    }
+
+    .admin-link {
+      margin-top: 25px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+
+    .admin-link a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .admin-link a:hover {
+      text-decoration: underline;
+    }
+
+    #messageBox {
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      /* Hidden by default to remove space */
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 30px 20px;
+      }
+
+      .smart-cart-logo {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <img src="images/cartimage.png" alt="Smart Cart Logo" class="smart-cart-logo">
+
+    <div class="login-container">
+      <form onsubmit="check(); return false;">
+        <div class="form-heading">Customer Signin</div>
+
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required />
+
+        <label for="number">Mobile Number:</label>
+        <input type="tel" name="number" id="number" required maxlength="10" placeholder="10-digit number" />
+        <span id="mobile-error" style="color: red; font-size: 14px; display: none;"></span>
+
+        <label for="email">Email:</label>
+        <input type="text" name="email" id="email" required placeholder="Enter your email" />
+        <span id="email-error" style="color: red; font-size: 14px; display: none;"></span>
+
+        <input type="submit" class="user-login" value="Submit" />
+
+        <!-- Continue with Google Button -->
+        <button type="button" class="google-btn" onclick="alert('Google Login not configured yet.')">
+          <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+            <path fill="#FFC107"
+              d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+            <path fill="#FF3D00"
+              d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+            <path fill="#4CAF50"
+              d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+            <path fill="#1976D2"
+              d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="admin-link">
+          Are you admin? <a href="adminlogin.html">Click here</a>
+        </div>
+
+        <div id="messageBox"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+
+  <script>
+    const numberInput = document.getElementById("number");
+    const mobileError = document.getElementById("mobile-error");
+    const emailInput = document.getElementById("email");
+    const emailError = document.getElementById("email-error");
+
+    // Mobile Validation: Real-time Strict Check
+    numberInput.addEventListener("input", function (e) {
+      // Remove non-digit characters immediately
+      this.value = this.value.replace(/\D/g, '');
+      const val = this.value;
+
+      if (val.length === 0) {
+        mobileError.style.display = "none";
+        return;
+      }
+
+      // Check first digit for Indian mobile series (6-9)
+      const firstDigit = parseInt(val[0]);
+
+      if (val.length > 10) {
+        this.value = val.slice(0, 10);
+      }
+
+      // Refined logic: If invalid start, definitely show error.
+      // If length < 10, show error (treating incomplete as invalid per request "real time").
+
+      if (![6, 7, 8, 9].includes(firstDigit) || val.length < 10) {
+        mobileError.textContent = "Invalid Number";
+        mobileError.style.display = "block";
+      } else {
+        mobileError.style.display = "none";
+      }
+    });
+
+    // Simple email format check on blur or input
+    emailInput.addEventListener("input", function () {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (this.value.length > 0 && !emailRegex.test(this.value)) {
+        emailError.textContent = "Please enter a valid email address";
+        emailError.style.display = "block";
+      } else {
+        emailError.style.display = "none";
+      }
+    });
+
+    function check() {
+      const name = document.getElementById("name").value.trim();
+      const number = document.getElementById("number").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const messageBox = document.getElementById("messageBox");
+
+      messageBox.textContent = "";
+      messageBox.style.display = "none";
+      messageBox.style.color = "red";
+
+      // Validate empty fields
+      if (!name || !number || !email) {
+        messageBox.textContent = "⚠️ All fields are required!";
+        messageBox.style.display = "block";
+        return;
+      }
+
+      // Final Mobile Validation before submit
+      if (!/^[6-9]\d{9}$/.test(number)) {
+        messageBox.textContent = "⚠️ Invalid Number";
+        messageBox.style.display = "block";
+        return;
+      }
+
+      // Final Email Validation (Any valid email)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        messageBox.textContent = "⚠️ Invalid Email Format";
+        messageBox.style.display = "block";
+        return;
+      }
+
+      // Save in localStorage
+      localStorage.setItem("customerName", name);
+      localStorage.setItem("customerNumber", number);
+      localStorage.setItem("customerEmail", email);
+
+      // Send to backend
+      fetch(`${BASE_URL}/customer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, mobile: number, email })
+      })
+        .then(res => {
+          if (!res.ok) { // Check for server-side errors (e.g., 404, 500)
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data.success) {
+            messageBox.style.color = "green";
+            messageBox.textContent = "✅ Login successful! Redirecting...";
+            messageBox.style.display = "block";
+            setTimeout(() => window.location.href = "customer.html", 1000);
+          } else {
+            messageBox.textContent = `❌ Error: ${data.message || 'Could not save customer info!'}`;
+            messageBox.style.display = "block";
+          }
+        })
+        .catch(err => {
+          console.error('Fetch Error:', err);
+          messageBox.textContent = "❌ Something went wrong! Please try again later.";
+          messageBox.style.display = "block";
+        });
+    }
+  </script>
+
+</body>
+
+</html>
